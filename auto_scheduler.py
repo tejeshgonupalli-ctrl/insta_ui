@@ -113,7 +113,7 @@ scheduler.add_job(
 scheduler.add_job(
     post_image,
     'date',
-    run_date=datetime(2025, 12, 27, 18, 12),
+    run_date=datetime(2025, 12, 27, 22, 44),
     args=["session_account5.json", "posts/img2.jpg"]
 
 )
@@ -140,7 +140,7 @@ scheduler.add_job(
 scheduler.add_job(
     post_reel,
     'date',
-    run_date=datetime(2025, 12, 27, 18, 42),
+    run_date=datetime(2025, 12, 27, 22, 45),
     args=["session_account5.json", "posts/reel2.mp4"]
 
 )
@@ -165,7 +165,7 @@ scheduler.add_job(
 scheduler.add_job(
     post_story,
     'date',
-    run_date=datetime(2025, 12, 27,19, 12),
+    run_date=datetime(2025, 12, 27, 22, 46),
     args=["session_account5.json", "posts/story.mp4"]
 )
 
