@@ -95,8 +95,8 @@ def post_story(session_file, path):
 scheduler.add_job(
     post_image,
     'date',
-    run_date=datetime(2025, 12, 27, 18, 10),
-    args=["session_account3.json", "posts/img2.jpg"]
+    run_date=datetime(2025, 12, 28, 19, 30),
+    args=["session_account3.json", "posts/img4.jpg"]
 
 )
 
@@ -104,8 +104,8 @@ scheduler.add_job(
 scheduler.add_job(
     post_image,
     'date',
-    run_date=datetime(2025, 12, 27, 18, 11 ),
-    args=["session_account4.json", "posts/img2.jpg"]
+    run_date=datetime(2025, 12, 28, 19, 31),
+    args=["session_account4.json", "posts/img4.jpg"]
 
 )
 
@@ -113,8 +113,8 @@ scheduler.add_job(
 scheduler.add_job(
     post_image,
     'date',
-    run_date=datetime(2025, 12, 27, 22, 44),
-    args=["session_account5.json", "posts/img2.jpg"]
+    run_date=datetime(2025, 12, 28, 19, 32),
+    args=["session_account5.json", "posts/img4.jpg"]
 
 )
 
@@ -122,8 +122,8 @@ scheduler.add_job(
 scheduler.add_job(
     post_reel,
     'date',
-    run_date=datetime(2025, 12, 27, 18, 40),
-    args=["session_account3.json", "posts/reel2.mp4"]
+    run_date=datetime(2025, 12, 28, 20, 10),
+    args=["session_account3.json", "posts/reel3.mp4"]
 
 )
 
@@ -131,8 +131,8 @@ scheduler.add_job(
 scheduler.add_job(
     post_reel,
     'date',
-    run_date=datetime(2025, 12, 28, 9, 58),
-    args=["session_account4.json", "posts/reel2.mp4"]
+    run_date=datetime(2025, 12, 28, 20, 11),
+    args=["session_account4.json", "posts/reel3.mp4"]
 
 )
 
@@ -140,8 +140,8 @@ scheduler.add_job(
 scheduler.add_job(
     post_reel,
     'date',
-    run_date=datetime(2025, 12, 28, 9, 52),
-    args=["session_account5.json", "posts/reel2.mp4"]
+    run_date=datetime(2025, 12, 28, 20, 12),
+    args=["session_account5.json", "posts/reel3.mp4"]
 
 )
 
@@ -149,7 +149,7 @@ scheduler.add_job(
 scheduler.add_job(
     post_story,
     'date',
-    run_date=datetime(2025, 12, 27, 19, 10),
+    run_date=datetime(2025, 12, 28, 21, 1),
     args=["session_account3.json", "posts/story.mp4"]
 )
 
@@ -157,7 +157,7 @@ scheduler.add_job(
 scheduler.add_job(
     post_story,
     'date',
-    run_date=datetime(2025, 12, 27, 19, 11),
+    run_date=datetime(2025, 12, 28, 21, 2),
     args=["session_account4.json", "posts/story.mp4"]
 )
 
@@ -165,7 +165,7 @@ scheduler.add_job(
 scheduler.add_job(
     post_story,
     'date',
-    run_date=datetime(2025, 12, 28, 9, 55),
+    run_date=datetime(2025, 12, 28, 21, 3),
     args=["session_account5.json", "posts/story.mp4"]
 )
 
