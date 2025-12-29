@@ -7,7 +7,7 @@ MESSAGE = sys.argv[2]    # message text
 cl = Client()
 
 # Session load
-cl.load_settings("session_account3.json")
+cl.load_settings("session_account5.json")
 
 print("✅ Session loaded")
 

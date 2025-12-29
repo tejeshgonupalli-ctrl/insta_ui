@@ -1,6 +1,6 @@
 import yt_dlp
 
-def download_reel(url, output="posts/reel1.mp4"):
+def download_reel(url, output="posts/reel6.mp4"):
     ydl_opts = {
         "outtmpl": output,
         "quiet": False

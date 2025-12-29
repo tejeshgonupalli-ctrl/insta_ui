@@ -1,7 +1,7 @@
 from instagrapi import Client
 import os
 
-SESSION = "session_account3.json"
+SESSION = "session_account5.json"
 IMAGE_PATH = "posts"   # folder
 
 cl = Client()

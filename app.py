@@ -5,6 +5,9 @@ from datetime import datetime
 from pathlib import Path
 import os
 import streamlit as st
+import uuid
+
+
 
 def show_downloaded_posts():
     st.subheader("📥 Downloaded Instagram Posts")
@@ -311,87 +314,208 @@ done_jobs = sum(1 for j in jobs if j.get("status") == "done")
 # ==========================
 
 
+# ---------------- CONFIG ----------------
+ACCOUNTS_FILE = "accounts.json"
+JOBS_FILE = "scheduled_jobs.json"
+UPLOAD_DIR = Path("posts/uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-st.markdown("### 🔍 Fetch Instagram Posts")
+st.set_page_config(page_title="Instagram Automation", layout="centered")
 
+st.title("📸 Instagram Automation Panel")
 
+# ---------------- LOAD ACCOUNTS ----------------
+if Path(ACCOUNTS_FILE).exists():
+    accounts = json.loads(Path(ACCOUNTS_FILE).read_text())
+else:
+    accounts = []
 
-target_username = st.text_input(
-    "Instagram username (posts fetch",
-    placeholder="example: natgeo"
+# ---------------- ADD ACCOUNT ----------------
+st.subheader("🔐 Add Instagram Account")
+
+username = st.text_input("Instagram Username")
+session_file = st.text_input("Session File (example: session_account1.json)")
+
+if st.button("➕ Add Account"):
+    if username and session_file:
+        accounts.append({
+            "username": username,
+            "session_file": session_file
+        })
+        Path(ACCOUNTS_FILE).write_text(json.dumps(accounts, indent=2))
+        st.success("✅ Account added")
+    else:
+        st.error("❌ Fill both fields")
+
+# ---------------- SELECT ACCOUNT ----------------
+st.divider()
+st.subheader("👤 Select Account")
+
+if not accounts:
+    st.warning("⚠️ Add at least one account")
+    st.stop()
+
+selected_username = st.selectbox(
+    "Post from account",
+    [a["username"] for a in accounts]
 )
 
+selected_account = next(
+    a for a in accounts if a["username"] == selected_username
+)
 
-if st.button("📥 Fetch My Instagram Posts"):
-    if not target_username.strip():
-        st.error("❌ Username enter")
-    else:
-        run_script(
-            "Fetch Instagram Posts",
-            SCRIPTS["fetch_medias"],
-            args=[target_username]
-        )
+# ---------------- CREATE POST ----------------
+st.divider()
+st.subheader("📝 Create Post")
+
+post_type = st.radio("Post Type", ["Image", "Reel", "Story"])
+
+uploaded_file = st.file_uploader(
+    "Upload media",
+    type=["jpg", "png", "mp4"]
+)
+
+caption = st.text_area(
+    "Caption (leave empty for AI auto-generate)"
+)
+
+if uploaded_file:
+    file_path = UPLOAD_DIR / uploaded_file.name
+    with open(file_path, "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    st.success("📂 Media uploaded")
+
+# ---------------- ACTION BUTTONS ----------------
+col1, col2 = st.columns(2)
+post_now = col1.button("🚀 Post Now")
+schedule_later = col2.button("📅 Schedule Later")
+
+# ---------------- POST NOW ----------------
+if post_now and uploaded_file:
+    from auto_scheduler import post_image, post_reel, post_story
+    import threading
+
+    session = selected_account["session_file"]
+
+    def run_post():
+        if post_type == "Image":
+            post_image(session, str(file_path))
+        elif post_type == "Reel":
+            post_reel(session, str(file_path))
+        else:
+            post_story(session, str(file_path))
+
+    threading.Thread(target=run_post, daemon=True).start()
+    st.success("✅ Post started in background")
 
 
 
-if page == "Dashboard":
-    st.markdown(
-        """
-        <div style="margin-bottom: 12px;">
-          <div class="top-title">INSTA AUTOMATION CONTROL CENTER</div>
-          <div class="top-sub">One place to orchestrate your full pipeline from download → upload</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# ---------------- SCHEDULE LATER ----------------
+if schedule_later and uploaded_file:
+    date = st.date_input("Select date")
+    time = st.time_input("Select time")
 
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.markdown(
-            f"""
-            <div class="metric-box">
-              <div class="metric-label">TOTAL JOBS</div>
-              <div class="metric-value">{total_jobs}</div>
-              <div class="metric-sub">All time</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col2:
-        st.markdown(
-            f"""
-            <div class="metric-box">
-              <div class="metric-label">PENDING</div>
-              <div class="metric-value">{pending_jobs}</div>
-              <div class="metric-sub">Queued for posting</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col3:
-        st.markdown(
-            f"""
-            <div class="metric-box">
-              <div class="metric-label">DONE</div>
-              <div class="metric-value">{done_jobs}</div>
-              <div class="metric-sub">Uploaded successfully</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with col4:
-        st.markdown(
-            f"""
-            <div class="metric-box">
-              <div class="metric-label">FAILED / STUCK</div>
-              <div class="metric-value">{failed_jobs}</div>
-              <div class="metric-sub">Needs attention</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    job = {
+        "id": uuid.uuid4().hex,
+        "username": selected_username,
+        "session_file": selected_account["session_file"],
+        "post_type": post_type.lower(),
+        "media_path": str(file_path),
+        "caption": caption,
+        "run_at": datetime.combine(date, time).isoformat()
+    }
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    jobs = []
+    if Path(JOBS_FILE).exists():
+        jobs = json.loads(Path(JOBS_FILE).read_text())
+
+    jobs.append(job)
+    Path(JOBS_FILE).write_text(json.dumps(jobs, indent=2))
+
+    st.success("📅 Post scheduled")
+
+
+
+# st.markdown("### 🔍 Fetch Instagram Posts")
+
+
+
+# target_username = st.text_input(
+#     "Instagram username (posts fetch",
+#     placeholder="example: natgeo"
+# )
+
+
+# if st.button("📥 Fetch My Instagram Posts"):
+#     if not target_username.strip():
+#         st.error("❌ Username enter")
+#     else:
+#         run_script(
+#             "Fetch Instagram Posts",
+#             SCRIPTS["fetch_medias"],
+#             args=[target_username]
+#         )
+
+
+
+# if page == "Dashboard":
+#     st.markdown(
+#         """
+#         <div style="margin-bottom: 12px;">
+#           <div class="top-title">INSTA AUTOMATION CONTROL CENTER</div>
+#           <div class="top-sub">One place to orchestrate your full pipeline from download → upload</div>
+#         </div>
+#         """,
+#         unsafe_allow_html=True,
+#     )
+
+#     col1, col2, col3, col4 = st.columns(4)
+#     with col1:
+#         st.markdown(
+#             f"""
+#             <div class="metric-box">
+#               <div class="metric-label">TOTAL JOBS</div>
+#               <div class="metric-value">{total_jobs}</div>
+#               <div class="metric-sub">All time</div>
+#             </div>
+#             """,
+#             unsafe_allow_html=True,
+#         )
+#     with col2:
+#         st.markdown(
+#             f"""
+#             <div class="metric-box">
+#               <div class="metric-label">PENDING</div>
+#               <div class="metric-value">{pending_jobs}</div>
+#               <div class="metric-sub">Queued for posting</div>
+#             </div>
+#             """,
+#             unsafe_allow_html=True,
+#         )
+#     with col3:
+#         st.markdown(
+#             f"""
+#             <div class="metric-box">
+#               <div class="metric-label">DONE</div>
+#               <div class="metric-value">{done_jobs}</div>
+#               <div class="metric-sub">Uploaded successfully</div>
+#             </div>
+#             """,
+#             unsafe_allow_html=True,
+#         )
+#     with col4:
+#         st.markdown(
+#             f"""
+#             <div class="metric-box">
+#               <div class="metric-label">FAILED / STUCK</div>
+#               <div class="metric-value">{failed_jobs}</div>
+#               <div class="metric-sub">Needs attention</div>
+#             </div>
+#             """,
+#             unsafe_allow_html=True,
+#         )
+
+#     st.markdown("<br>", unsafe_allow_html=True)
 
 elif page == "📥 Downloaded Posts":
     st.markdown("## 📥 Downloaded Instagram Posts")

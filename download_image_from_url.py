@@ -1,6 +1,6 @@
 from instagrapi import Client
 
-SESSION = "session_account3.json"
+SESSION = "session_account5.json"
 POST_URL = "https://www.instagram.com/p/DSnm06fEnO2/"
 
 cl = Client()

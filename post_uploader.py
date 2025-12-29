@@ -7,7 +7,7 @@ CAPTION = sys.argv[2] if len(sys.argv) > 2 else "Reposted 🔁"
 cl = Client()
 
 # Load session file
-cl.load_settings("session_account3.json")
+cl.load_settings("session_account5.json")
 
 # ✅ No login call needed; session is already loaded
 
