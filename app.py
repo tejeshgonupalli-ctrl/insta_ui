@@ -347,6 +347,43 @@ if st.button("➕ Add Account"):
     else:
         st.error("❌ Fill both fields")
 
+
+st.divider()
+st.subheader("🧾 Create Instagram Session (UI)")
+
+new_username = st.text_input("Instagram Username (login)", key="new_user")
+new_password = st.text_input(
+    "Instagram Password",
+    type="password",
+    key="new_pass"
+)
+
+if st.button("🔐 Create Session File"):
+    if not new_username or not new_password:
+        st.error("❌ Username & password required")
+    else:
+        try:
+            from instagrapi import Client
+
+            cl = Client()
+            cl.login(new_username, new_password)
+
+            session_filename = f"session_{new_username}.json"
+            cl.dump_settings(session_filename)
+
+            # ✅ Add to accounts.json automatically
+            accounts.append({
+                "username": new_username,
+                "session_file": session_filename
+            })
+            Path(ACCOUNTS_FILE).write_text(json.dumps(accounts, indent=2))
+
+            st.success(f"✅ Session created & saved as {session_filename}")
+            st.info("ℹ️ Account added to account selector")
+
+        except Exception as e:
+            st.error(f"❌ Session creation failed: {e}")
+
 # ---------------- SELECT ACCOUNT ----------------
 st.divider()
 st.subheader("👤 Select Account")
@@ -539,6 +576,7 @@ if schedule_later and uploaded_file:
 #         )
 
 #     st.markdown("<br>", unsafe_allow_html=True)
+
 
 elif page == "📥 Downloaded Posts":
     st.markdown("## 📥 Downloaded Instagram Posts")
