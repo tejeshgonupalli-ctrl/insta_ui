@@ -409,22 +409,76 @@ if not selected_accounts:
 st.divider()
 st.subheader("📝 Create Post")
 
-post_type = st.radio("Post Type", ["Image", "Reel", "Story"])
+# 🔗 Reel URL input (STEP 1 already added)
+reel_url = st.text_input(
+    "🔗 Paste Instagram Reel URL (optional)",
+    placeholder="https://www.instagram.com/reel/xxxxxxxx/"
+)
+
+
 
 uploaded_file = st.file_uploader(
-    "Upload media",
-    type=["jpg", "png", "mp4"]
+    "Upload Image / Reel / Story (or use Reel URL above)",
+    type=["jpg", "jpeg", "png", "mp4"]
 )
 
-caption = st.text_area(
-    "Caption (leave empty for AI auto-generate)"
-)
+file_path = None
+auto_caption = ""
 
-if uploaded_file:
+# 🔹 CASE 1: Reel URL pasted
+if reel_url:
+    st.info("⬇️ Downloading reel from link...")
+
+    try:
+        from utils.reel_downloader import download_reel_from_url
+
+        # Use first selected account session ONLY for download
+        session_file = selected_accounts[0]["session_file"]
+
+        result = download_reel_from_url(
+        reel_url,
+        session_file
+    )
+        
+        result = download_reel_from_url(reel_url, session_file)
+        file_path = result[0]
+        auto_caption = result[1]
+
+        st.success("✅ Reel downloaded successfully")
+        st.video(file_path)
+
+    except Exception as e:
+        st.error(f"❌ Failed to download reel: {e}")
+        st.stop()
+
+# 🔹 CASE 2: Normal file upload
+elif uploaded_file:
     file_path = UPLOAD_DIR / uploaded_file.name
     with open(file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    st.success("📂 Media uploaded")
+        f.write(uploaded_file.read())
+
+    st.success("📂 Media uploaded successfully")
+
+
+# ---------------- CAPTION ----------------
+st.subheader("📝 Caption")
+
+caption = st.text_area(
+    "Write / Edit Caption",
+    value=auto_caption if auto_caption else "",
+    height=180,
+    placeholder="Caption will auto-fill if Reel URL is used"
+)
+
+
+# ---------------- POST TYPE ----------------
+st.subheader("📌 Post Type")
+
+post_type = st.selectbox(
+    "Select post type",
+    ["Image", "Reel", "Story"],
+    index=1
+)
 
 # ---------------- SCHEDULE POST ----------------
 st.divider()
@@ -435,7 +489,7 @@ with st.form("schedule_form"):
     time_ = st.time_input("⏰ Select time")
     submit_schedule = st.form_submit_button("📅 Schedule Later")
 
-if submit_schedule and uploaded_file:
+if submit_schedule and file_path:
     run_at = datetime.combine(date, time_).isoformat()
 
     jobs = []
@@ -447,7 +501,7 @@ if submit_schedule and uploaded_file:
             "id": uuid.uuid4().hex,
             "username": acc["username"],
             "session_file": acc["session_file"],
-            "post_type": post_type.lower(),
+            "post_type": str(post_type).lower(),
             "media_path": str(file_path),
             "scheduled_time": run_at,
             "status": "pending"
@@ -465,35 +519,44 @@ post_now = st.button("🚀 Post Now")
 
 # schedule_later = col2.button("📅 Schedule Later")
 
+
+# ---------------- POST NOW ----------------
 # ---------------- POST NOW ----------------
 import time
 import shutil
+from pathlib import Path
 from auto_scheduler import post_image, post_reel, post_story
 
-if post_now and uploaded_file:
 
-    for i, acc in enumerate(selected_accounts):
+
+if post_now and file_path and selected_accounts:
+
+    file_path = Path(file_path)
+    post_type_normalized = str(post_type).lower()
+
+    for acc in selected_accounts:
         session = acc["session_file"]
         username = acc["username"]
 
         try:
-            # 🔥 IMPORTANT: create UNIQUE reel per account
+            # 🔥 create UNIQUE media per account
             unique_path = file_path.with_name(
                 f"{file_path.stem}_{username}{file_path.suffix}"
             )
             shutil.copy(file_path, unique_path)
 
-            if post_type == "Image":
+            if post_type_normalized == "image":
                 post_image(session, str(unique_path), username)
 
-            elif post_type == "Reel":
+            elif post_type_normalized == "reel":
                 post_reel(session, str(unique_path), username)
+                time.sleep(60)  # ⏳ anti-ban delay
 
-                # ⏳ VERY IMPORTANT delay
-                time.sleep(60)
+            elif post_type_normalized == "story":
+                post_story(session, str(unique_path), username)
 
             else:
-                post_story(session, str(unique_path), username)
+                raise ValueError(f"Unknown post type: {post_type}")
 
             st.success(f"✅ Posted to @{username}")
 
