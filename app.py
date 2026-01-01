@@ -531,41 +531,43 @@ post_now = st.button("🚀 Post Now")
 
 # ---------------- POST NOW ----------------
 # ---------------- POST NOW ----------------
-import time
 import shutil
 from pathlib import Path
-from auto_scheduler import post_image, post_reel, post_story
+from utils.watermark_video import add_story_watermark
+from auto_scheduler import post_reel, post_story, post_image
 
 
+if post_now and file_path:
 
-if post_now and file_path and selected_accounts:
-
-    file_path = Path(file_path)
-    post_type_normalized = str(post_type).lower()
+    original_path = Path(file_path)
 
     for acc in selected_accounts:
-        session = acc["session_file"]
         username = acc["username"]
+        session_file = acc["session_file"]
 
         try:
-            # 🔥 create UNIQUE media per account
-            unique_path = file_path.with_name(
-                f"{file_path.stem}_{username}{file_path.suffix}"
+            # 🔹 STEP 1: create UNIQUE copy per account
+            unique_video = original_path.with_name(
+                f"{original_path.stem}_{username}{original_path.suffix}"
             )
-            shutil.copy(file_path, unique_path)
 
-            if post_type_normalized == "image":
-                post_image(session, str(unique_path), username)
+            shutil.copy(original_path, unique_video)
 
-            elif post_type_normalized == "reel":
-                post_reel(session, str(unique_path), username)
-                time.sleep(60)  # ⏳ anti-ban delay
+            # 🔹 STEP 2: apply watermark WITH CORRECT USERNAME
+            wm_video = add_story_watermark(
+                str(unique_video),
+                watermark_text=f"@{username}"
+            )
 
-            elif post_type_normalized == "story":
-                post_story(session, str(unique_path), username)
+            # 🔹 STEP 3: post based on type
+            if post_type.lower() == "reel":
+                post_reel(session_file, wm_video, username)
+
+            elif post_type.lower() == "story":
+                post_story(session_file, wm_video)
 
             else:
-                raise ValueError(f"Unknown post type: {post_type}")
+                post_image(session_file, str(unique_video), username)
 
             st.success(f"✅ Posted to @{username}")
 
