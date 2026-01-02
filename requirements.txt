@@ -1,29 +1,58 @@
-# Core Instagram automation
-instagrapi==1.17.0
-instaloader
+# ===============================
+# STREAMLIT UI
+# ===============================
+streamlit==1.32.2
 
-# Media processing
-pillow
-moviepy
-opencv-python
-numpy
-pydub
+# ===============================
+# INSTAGRAM AUTOMATION
+# ===============================
+instagrapi==2.1.2
+requests==2.31.0
+urllib3==2.1.0
 
-# Utilities
-requests
-python-dotenv
-python-dateutil
-dateparser
-tqdm
-aiohttp
+# ===============================
+# IMAGE & VIDEO PROCESSING
+# ===============================
+Pillow==10.2.0
+moviepy==1.0.3
+numpy==1.26.4
+opencv-python==4.9.0.80
 
-# Streamlit UI
-streamlit
+# ===============================
+# VIDEO BACKEND (FFMPEG BRIDGE)
+# ===============================
+imageio==2.34.0
+imageio-ffmpeg==0.4.9
 
-# AI Model SDKs (used in feature4_engine.py)
-openai
-google-generativeai
-groq
+# ===============================
+# AUDIO (OPTIONAL – SAFE)
+# ===============================
+pydub==0.25.1
 
-# Optional: To avoid SSL errors on some machines
-urllib3
+# ===============================
+# DATE / TIME / SCHEDULING
+# ===============================
+python-dateutil==2.9.0.post0
+pytz==2024.1
+
+# ===============================
+# UTILITIES
+# ===============================
+tqdm==4.66.1
+python-dotenv==1.0.1
+
+# ===============================
+# REEL / LINK DOWNLOAD
+# ===============================
+yt-dlp==2024.03.10
+
+# ===============================
+# AI / CAPTION GENERATION
+# ===============================
+openai==1.10.0
+groq==0.11.0
+
+# ===============================
+# COMPATIBILITY
+# ===============================
+typing-extensions==4.9.0
